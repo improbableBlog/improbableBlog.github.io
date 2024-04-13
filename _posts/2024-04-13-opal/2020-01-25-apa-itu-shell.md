@@ -1,14 +1,11 @@
 ---
 layout: post
 title: "OPAL: Offline Primitive Discovery for Accelerating Offline Reinforcement Learning"
+author: "Anurag Ajay, Pulkit Agrawal"
 description: >
-date: 2024-03-28
+date: 2024-04-13
 usemathjax: true
 ---
-
-# OPAL: Offline Primitive Discovery for Accelerating Offline Reinforcement Learning
-
-Article by *Anurag Ajay, Pulkit Agrawal*
 
 # Leveraging task-agnostic datasets
 
