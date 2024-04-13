@@ -1,9 +1,10 @@
 ---
 layout: post
+
 title: "OPAL: Offline Primitive Discovery for Accelerating Offline Reinforcement Learning"
-author: "Anurag Ajay, Pulkit Agrawal"
-description: >
+authors: Anurag Ajay (MIT), Pulkit Agrawal (MIT)
 date: 2024-04-13
+
 usemathjax: true
 ---
 
@@ -11,20 +12,18 @@ usemathjax: true
 
 Several practical concerns may limit the agent’s ability to act directly in the real world. For example, consider the Atlas robot learning via trial and error. This could cause the Atlas to fall frequently requiring costly human supervision for checks and resets (Atkeson et al., 2015), thereby rendering many standard online RL algorithms inapplicable (Matsushima et al., 2020).
 
-![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/Untitled.png](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/Untitled.png)
+![assets/Untitled.png](assets/Untitled.png)
 
-![          (Taken from berkeley CS 285)](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/Screen_Shot_2021-03-16_at_11.54.58_PM.png)
-
-          (Taken from berkeley CS 285)
+![(Taken from berkeley CS 285)](assets/Screen_Shot_2021-03-16_at_11.54.58_PM.png)
 
 Instead of online interaction, we might have access to large amounts of previously logged data. This data can come from a potentially sub-optimal, but safe hand-engineered policy. We can use these exploratory past data to learn a task policy offline. This problem setup is called offline RL. Despite having tremendous practical applications, offline RL remains limited in its use due to various optimization issues (Levine et al., 2020). Prior work (Shankar et al., 2020) in online RL ~~has~~ used temporally extended skills (aka *primitives* (Sutton et al., 1998)) to extract a **compact action space.** This improves performance by ****effectively **reducing the task horizon and** thereby helping in **better credit assignment**. However, it remains unclear if such primitives can help with offline RL.
 
-![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/Screen_Shot_2021-03-17_at_12.34.47_AM.png](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/Screen_Shot_2021-03-17_at_12.34.47_AM.png)
+![assets/Screen_Shot_2021-03-17_at_12.34.47_AM.png](assets/Screen_Shot_2021-03-17_at_12.34.47_AM.png)
 
-![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/antmaze_medium.gif](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/antmaze_medium.gif)
+![assets/antmaze_medium.gif](assets/antmaze_medium.gif)
 
 <div style="text-align:center;">
-    <img src="OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/antmaze-large.gif" alt="Image">
+    <img src="assets/antmaze-large.gif" alt="Image">
 </div>
 
 In this work, we investigate whether learning *primitive* skills in an unsupervised manner can benefit learning in the offline setup. For example, consider a dataset of an ant robot exploring mazes as shown above. While this dataset does not provide a trajectory that goes directly towards the intended goal, it does offer knowledge of what type of extended behavior is useful for exploring the maze (e.g., moving forward, left, right, and backward). Our unsupervised learning objective aims to distill these behaviors into a continuous space of latent vectors z, which can be decoded into primitives using a latent-conditioned policy. Empirically these primitives correspond to useful behaviors such as walking in different directions indicated by different colors in the figure above. Once we extract these primitives, we can use the latent vectors $$z$$ as a compact temporally extended action space for learning a task policy with offline RL. Since the task policy only needs to combine the task-relevant skills and not focus on learning how to locomote, the task learning becomes easier.
@@ -34,7 +33,7 @@ subsequent task-directed offline policy optimization phase. Despite not using an
 
 # Offline Reinforcement Learning with OPAL
 
-![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/iclr.bmp](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/iclr.bmp)
+![assets/iclr.bmp](assets/iclr.bmp)
 
 We extract a continuous space of temporally-extended primitives $$\pi_\theta(a \mid s, z)$$ from $$\mathcal{D}$$ using a generative model inspired from $$\beta$$-VAE (Higgins et al., 2016). This model encodes state-action trajectory $$\tau$$ int to latent $$z$$ $$\big($$i.e., encoder $$q_\phi(z \mid \tau)$$ $$\big)$$ which can be decoded into a sequence of $$c$$ actions with state-conditioned *primitive policy* $$\pi_\theta(a \mid s,z)$$. To regularize the latent space we constrain the extracted latent $$z$$ to be predictable from the first state of the trajectory using *prior* $$\rho_w(z \mid s)$$. This regularization has been shown to be useful in prior work (Lynch et al., 2019). The model is trained by optimizing
 
@@ -43,7 +42,7 @@ $$\max_{\theta, \phi, \omega} \mathbb{E}_{\tau\sim\mathcal{D},z \sim q_\phi(z \m
 After learning the above generative model, we can relabel the dataset using the *encoder* to get high-level transitions $$(s_0, z, s_c,\sum_{t=0}^{c-1}\gamma^tr_t)$$ and low-level transitions $$\{(s_t, a_t, z)_{t=0}^{c-1}\}$$. Even though we train both the encoder and the primitive policy together, they might still be inconsistent with one another. This is because the primitive policy tries to adapt to the latent vectors z, inferred by a changing encoder. In theory, training both the encoder and the primitive policy for many epochs could resolve the issue. In practice, we found fine-tuning the *primitive policy* using low-level transitions $$(s_t, a_t, z)$$ with behavioral cloning was sufficient to ensure consistency with the encoder. After fine-tuning the primitive policy, we train a task level policy $$\pi_\psi(z|s)$$ using high-level transitions with offline RL. We use Conservative Q-Learning (CQL) (Kumar et al., 2020) as our offline RL algorithm. 
 As a result of learning the task policy on temporally extended primitives, we are able to make significant gains on antmaze and kitchen tasks taken from D4RL (Fu et al., 2020).
 
-![tab1-crop.bmp](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/tab1-crop.bmp)
+![tab1-crop.bmp](assets/tab1-crop.bmp)
 
 # Leveraging OPAL for other uses
 
@@ -51,15 +50,15 @@ Finally, we can also use the learned primitives to improve online RL, few-shot i
 
 ### Few-shot Imitation Learning
 
-![antmaze_medium_slow.gif](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/antmaze_medium_slow.gif)
+![antmaze_medium_slow.gif](assets/antmaze_medium_slow.gif)
 
-![antmaze_large_slow.gif](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/antmaze_large_slow.gif)
+![antmaze_large_slow.gif](assets/antmaze_large_slow.gif)
 
 Previously, we assumed that we have access to a task reward function, but only undirected data that just explore the environment. Now, we will study the opposite case, where we are not provided with a reward function for the new task either, but instead, receive a small number (i.e. 10) of task-specific demonstrations that illustrate optimal behavior (see figure above). Simply imitating these few demonstrations is insufficient to obtain a good policy. 
 
 However, our experiments show that relabeling these demonstrations with their inferred primitives and then imitating these primitives leads to a much better policy in this setting. 
 
-![tab2-crop.bmp](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/tab2-crop.bmp)
+![tab2-crop.bmp](assets/tab2-crop.bmp)
 
 ### Online Multi-task transfer
 
@@ -67,11 +66,11 @@ Till now, we have learned the task policy offline either with offline RL or imit
 
 **Source Task**                                                            **Transfer Tasks**
 
-![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/pick-place.gif](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/pick-place.gif)
+![assets/pick-place.gif](assets/pick-place.gif)
 
-![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/mt10.gif.gif](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/mt10.gif.gif)
+![assets/mt10.gif.gif](assets/mt10.gif.gif)
 
-![tab3-crop.bmp](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/tab3-crop.bmp)
+![tab3-crop.bmp](assets/tab3-crop.bmp)
 
 ## Related Work and Future Perspectives
 
