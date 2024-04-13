@@ -1,121 +1,137 @@
 ---
-title: What is a shell? 🐚 adalah kerang ajaib?
-date: 2020-01-25 11:58:47 +07:00
-modified: 2020-02-02 16:49:47 +07:00
-tags: [unix/linux, cli]
-description: Shell adalah sebuah command-line interpreter; program yang berperan sebagai penerjemah perintah yang diinputkan oleh User yang melalui terminal, sehingga perintah tersebut bisa dimengerti oleh si Kernel.
-image: "/apa-itu-shell/shell_evolution.png"
+layout: post
+title: "OPAL: Offline Primitive Discovery for Accelerating Offline Reinforcement Learning"
+description: >
+date: 2024-03-28
+usemathjax: true
 ---
 
-<a href="http://www.youtube.com/watch?v=tc4ROCJYbm0&t=70" target="_blank" rel="noopener">Dulu</a> Sebelum adanya <abbr title="Graphical User Interface">GUI</abbr> cara user berinteraksi dengan komputer menggunakan <abbr title="Command Line Interface">CLI</abbr> yaitu mengetik baris perintah pada sebuah antarmuka dalam bentuk baris teks seperti 👇.
+# OPAL: Offline Primitive Discovery for Accelerating Offline Reinforcement Learning
 
-<figure>
-<img src="/apa-itu-shell/terminal_nginx.gif" alt="installing nginx in ubuntu">
-<figcaption>Fig 1. Terminal emulator, instalasi package dan check service.</figcaption>
-</figure>
+Article by *Anurag Ajay, Pulkit Agrawal*
 
-Jika kamu pernah menggunakan unix/linux mungkin pernah menggunakan program diatas, bahkan mungkin setiap hari menggunakannya untuk mengeksekusi suatu perintah melalui <a href="http://en.wikipedia.org/wiki/List_of_terminal_emulators" target="_blank" rel="noopener">terminal emulator</a>.
+# Leveraging task-agnostic datasets
 
-User<sup id="user">[[1]](#user-ref)</sup> tidak bisa secara langsung berkomunikasi dengan sebuah hardware komputer, maka dari itu kita membutuhkan sebuah sistem operasi; **Kernel** adalah program yang merupakan inti utama dari sistem operasi komputer.
+Several practical concerns may limit the agent’s ability to act directly in the real world. For example, consider the Atlas robot learning via trial and error. This could cause the Atlas to fall frequently requiring costly human supervision for checks and resets (Atkeson et al., 2015), thereby rendering many standard online RL algorithms inapplicable (Matsushima et al., 2020).
 
-<figure>
-<img src="/apa-itu-shell/kernel.png" alt="kernel central of operating system">
-<figcaption>Fig 2. bagan kernel.</figcaption>
-</figure>
+![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/Untitled.png](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/Untitled.png)
 
-Kernel memfasilitasi interaksi antara komponen perangkat keras dan perangkat lunak, berperan untuk menangani permintaan input/ouput dari perangkat lunak, selanjutnya menerjemahkannya ke dalam pemrosesan data untuk diintruksikan ke CPU, sehingga Hardware(cpu, memory, devices) mengerti perintah yang dimaksud dari pengguna.
+![          (Taken from berkeley CS 285)](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/Screen_Shot_2021-03-16_at_11.54.58_PM.png)
 
-Ketika kita menginputkan suatu perintah pada terminal emulator, kernel tidak langsung mengerti perintah yang kita ketik, kita membutuhkan suatu interface sebagai perantara menuju kernel yaitu **Shell**.
+          (Taken from berkeley CS 285)
 
-<figure>
-<img src="/apa-itu-shell/shell.png" alt="shell">
-<figcaption>Fig 3. bagan komunikasi shell.</figcaption>
-</figure>
+Instead of online interaction, we might have access to large amounts of previously logged data. This data can come from a potentially sub-optimal, but safe hand-engineered policy. We can use these exploratory past data to learn a task policy offline. This problem setup is called offline RL. Despite having tremendous practical applications, offline RL remains limited in its use due to various optimization issues (Levine et al., 2020). Prior work (Shankar et al., 2020) in online RL ~~has~~ used temporally extended skills (aka *primitives* (Sutton et al., 1998)) to extract a **compact action space.** This improves performance by ****effectively **reducing the task horizon and** thereby helping in **better credit assignment**. However, it remains unclear if such primitives can help with offline RL.
 
-<mark>Shell adalah sebuah command-line interpreter; program yang berperan sebagai penerjemah perintah yang diinputkan oleh User yang melalui terminal</mark>, sehingga perintah tersebut bisa dimengerti oleh si Kernel.
+![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/Screen_Shot_2021-03-17_at_12.34.47_AM.png](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/Screen_Shot_2021-03-17_at_12.34.47_AM.png)
 
-Login shell biasanya ditetapkan oleh local System Administrator ketika pada saat pertama user kamu dibuat, kamu bisa lihat login shell yang sedang kamu gunakan dengan perintah dibawah ini.
+![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/antmaze_medium.gif](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/antmaze_medium.gif)
 
-```bash
-$ echo $SHELL
-# atau
-$ echo $0
+<div style="text-align:center;">
+    <img src="OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/antmaze-large.gif" alt="Image">
+</div>
+
+In this work, we investigate whether learning *primitive* skills in an unsupervised manner can benefit learning in the offline setup. For example, consider a dataset of an ant robot exploring mazes as shown above. While this dataset does not provide a trajectory that goes directly towards the intended goal, it does offer knowledge of what type of extended behavior is useful for exploring the maze (e.g., moving forward, left, right, and backward). Our unsupervised learning objective aims to distill these behaviors into a continuous space of latent vectors z, which can be decoded into primitives using a latent-conditioned policy. Empirically these primitives correspond to useful behaviors such as walking in different directions indicated by different colors in the figure above. Once we extract these primitives, we can use the latent vectors $$z$$ as a compact temporally extended action space for learning a task policy with offline RL. Since the task policy only needs to combine the task-relevant skills and not focus on learning how to locomote, the task learning becomes easier.
+
+We refer to our proposed framework of using unsupervised learning to extract primitives for offline policy optimization as OPAL. We apply this paradigm to offline RL, where the agent is given a single offline dataset for both the initial unsupervised learning phase and then a
+subsequent task-directed offline policy optimization phase. Despite not using any additional online data, OPAL can dramatically improve offline policy optimization compared to optimizing offline policy directly on action space. We will now describe our method in detail.
+
+# Offline Reinforcement Learning with OPAL
+
+![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/iclr.bmp](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/iclr.bmp)
+
+We extract a continuous space of temporally-extended primitives $$\pi_\theta(a \mid s, z)$$ from $$\mathcal{D}$$ using a generative model inspired from $$\beta$$-VAE (Higgins et al., 2016). This model encodes state-action trajectory $$\tau$$ int to latent $$z$$ $$\big($$i.e., encoder $$q_\phi(z \mid \tau)$$ $$\big)$$ which can be decoded into a sequence of $$c$$ actions with state-conditioned *primitive policy* $$\pi_\theta(a \mid s,z)$$. To regularize the latent space we constrain the extracted latent $$z$$ to be predictable from the first state of the trajectory using *prior* $$\rho_w(z \mid s)$$. This regularization has been shown to be useful in prior work (Lynch et al., 2019). The model is trained by optimizing
+
+$$\max_{\theta, \phi, \omega} \mathbb{E}_{\tau\sim\mathcal{D},z \sim q_\phi(z \mid \tau)}\left[\sum_{t=0}^{c-1} \log \pi_\theta(a_t \mid s_t,z) \right] - \beta\text{D}_{\text{KL}}(q_\phi(z \mid \tau) \mid\mid \rho_\omega(z \mid s_0))$$
+
+After learning the above generative model, we can relabel the dataset using the *encoder* to get high-level transitions $$(s_0, z, s_c,\sum_{t=0}^{c-1}\gamma^tr_t)$$ and low-level transitions $$\{(s_t, a_t, z)_{t=0}^{c-1}\}$$. Even though we train both the encoder and the primitive policy together, they might still be inconsistent with one another. This is because the primitive policy tries to adapt to the latent vectors z, inferred by a changing encoder. In theory, training both the encoder and the primitive policy for many epochs could resolve the issue. In practice, we found fine-tuning the *primitive policy* using low-level transitions $$(s_t, a_t, z)$$ with behavioral cloning was sufficient to ensure consistency with the encoder. After fine-tuning the primitive policy, we train a task level policy $$\pi_\psi(z|s)$$ using high-level transitions with offline RL. We use Conservative Q-Learning (CQL) (Kumar et al., 2020) as our offline RL algorithm. 
+As a result of learning the task policy on temporally extended primitives, we are able to make significant gains on antmaze and kitchen tasks taken from D4RL (Fu et al., 2020).
+
+![tab1-crop.bmp](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/tab1-crop.bmp)
+
+# Leveraging OPAL for other uses
+
+Finally, we can also use the learned primitives to improve online RL, few-shot imitation learning, and multi-task transfer learning. 
+
+### Few-shot Imitation Learning
+
+![antmaze_medium_slow.gif](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/antmaze_medium_slow.gif)
+
+![antmaze_large_slow.gif](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/antmaze_large_slow.gif)
+
+Previously, we assumed that we have access to a task reward function, but only undirected data that just explore the environment. Now, we will study the opposite case, where we are not provided with a reward function for the new task either, but instead, receive a small number (i.e. 10) of task-specific demonstrations that illustrate optimal behavior (see figure above). Simply imitating these few demonstrations is insufficient to obtain a good policy. 
+
+However, our experiments show that relabeling these demonstrations with their inferred primitives and then imitating these primitives leads to a much better policy in this setting. 
+
+![tab2-crop.bmp](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/tab2-crop.bmp)
+
+### Online Multi-task transfer
+
+Till now, we have learned the task policy offline either with offline RL or imitation learning. We will now leverage the learned primitives to learn the task policy online in multi-task settings. We learn primitives with expert data from pick-and-place task and then use it to learn multi-task policy for Multi-task 10 and Multi-task 50 benchmarks (from metaworld (Yu et al., 2020)), containing 10 and 50 robotic manipulation tasks which needs to be solved simultaneously, as shown in the figure below. See table 4 for results.
+
+**Source Task**                                                            **Transfer Tasks**
+
+![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/pick-place.gif](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/pick-place.gif)
+
+![OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/mt10.gif.gif](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/mt10.gif.gif)
+
+![tab3-crop.bmp](OPAL%20Offline%20Primitive%20Discovery%20for%20Accelerating%20%20bb3c06e02d634b8a86cc1795303accd4/tab3-crop.bmp)
+
+## Related Work and Future Perspectives
+
+OPAL is most similar to PARROT (Singh et al., 2021) when it comes to extracting primitives from exploratory datasets of diverse behaviors. However, OPAL uses a VAE model for extracting primitives while PARROT uses normalizing flows for the same. Furthermore, OPAL is primarily evaluated on offline RL while PARROT is mainly evaluated on online visual transfer learning.
+
+In our work, we focused on simple auto-encoding models for representing primitives. An interesting avenue for future work is scaling up this basic paradigm to more complex image-based tasks with:
+
+- **Better Visual Encoder.** In this work, we assumed access to the state representation of the environment. In the real world, OPAL needs to work from raw observations such as images. Hence, an important future direction is to use better visual encoders (eg. Vision transformers (Dosovitskiy et al., 2021)) to obtain a compact representation of image observations and then use OPAL on the compact representation.
+- **Multi-modal primitive distribution.** In this work, we model the primitive distribution as a gaussian. However, this can be limited in its ability to model multi-modal distributions. Thus, another important future direction is to use either Gaussian Mixture Models or Normalizing flows (Dinh et al., 2017) for modeling multi-modal primitive distribution.
+
+**Bibtex**
+
+```
+@article{ajay2020opal,
+  title={Opal: Offline primitive discovery for accelerating offline reinforcement learning},
+  author={Ajay, Anurag and Kumar, Aviral and Agrawal, Pulkit and Levine, Sergey and Nachum, Ofir},
+  journal={arXiv preprint arXiv:2010.13611},
+  year={2020}
+}
 ```
 
-Setiap shell mempunyai default prompt. beberapa shell yang paling umum:
+Link to the [Slides](https://drive.google.com/file/d/1PfxFOTY1HjR5jdgHeRtGBR1MoS2fSlbS/view) and [Poster](https://drive.google.com/file/d/1To5N1lg3CMrTkI-hT7Viw4LtaJWaRXis/view)
 
-```bash
-$ (dollar sign)   # sh, ksh, bash
-% (percent sign)  # csh, tcsh
-```
+# References
 
-##### Terminologi pada shell prompt
+[1] Christopher G Atkeson, Benzun P Wisely Babu, Nandan Banerjee, Dmitry Berenson, Christoper PBove, Xiongyi Cui, Mathew DeDonato, Ruixiang Du, Siyuan Feng, Perry Franklin, et al. *No falls, no resets: Reliable humanoid behavior in the darpa robotics challenge.* IEEE Humanoids, 2015.
 
-Shell prompt adalah tempat dimana kita menuliskan suatu perintah, berikut adalah terminologinya ini membantu, jika kamu ingin mengetahui bagian-bagianya.
+[2] Tatsuya Matsushima, Hiroki Furuta, Yutaka Matsuo, Ofir Nachum, and Shixiang Gu. *Deployment-efficient reinforcement learning via model-based offline optimization*. arXiv, 2020.
 
-<figure>
-<img src="/apa-itu-shell/term_shell_prompt.png" alt="shell">
-<figcaption>Fig 4. bagian-bagin dari shell prompt.</figcaption>
-</figure>
+[3] Irina Higgins, Loic Matthey, Arka Pal, Christopher Burgess, Xavier Glorot, Matthew Botvinick, Shakir Mohamed, and Alexander Lerchner. *beta-vae: Learning basic visual concepts with aconstrained variational framework.* 2016.
 
-Dibawah ini salah satu contoh perintah sederhana untuk menampilkan sebuah arsitektur CPU komputer yang sedang saya gunakan.
+[4] Sergey Levine, Aviral Kumar, George Tucker, and Justin Fu. *Offline Reinforcement Learning: Tutorial, Review, and Perspectives on Open Problems*. arXiv, 2020.
 
-<figure>
-<img src="/apa-itu-shell/terminal_lscpu.gif" alt="installing nginx in ubuntu">
-<figcaption>Fig 5. menampilkan informasi tentang arsitektur CPU.</figcaption>
-</figure>
+[5] Aviral Kumar, Aurick Zhou, George Tucker, and Sergey Levine. *Conservative q-learning for offline reinforcement learning*. NeurIPS, 2020.
 
-Dari perintah yang contohkan, ketika user mengetikan suatu inputan perintah di terminal dan menekan <kbd>ENTER</kbd>, maka shell akan mengubah perintah user menjadi bahasa yang bisa dipahami oleh kernel, dan Kernel menerjemahkannya ke dalam pemrosesan data untuk diintruksikan ke Hardware sehingga menghasilkan output yg sesuai dengan perintah user.
+[6] Justin Fu, Aviral Kumar, Ofir Nachum, George Tucker, and Sergey Levine. *D4rl: Datasets for deep data-driven reinforcement learning*. arXiv, 2020. 
 
-Shell mempunyai beberapa macam dan turunan, berikut yang paling umum.
+[7] Seyed Kamyar Seyed Ghasemipour, Dale Schuurmans, and Shixiang Shane Gu. *Emaq: Expected max q-learning operator for simple yet effective offline and online rl*. arXiv, 2020.
 
-<figure>
-<img src="/apa-itu-shell/shell_evolution.png" alt="shell evolution">
-<figcaption>Fig 6. evaluasi shell dari tahun ke tahun.</figcaption>
-</figure>
+[8] Ziyu Wang, Josh S Merel, Scott E Reed, Nando de Freitas, Gregory Wayne, and Nicolas Heess. *Robust imitation of diverse behaviors.* NeurIPS, 2017.
 
-Sedikit penjelasan dari gambar diatas.
+[9] Tianhe Yu, Deirdre Quillen, Zhanpeng He, Ryan Julian, Karol Hausman, Chelsea Finn, and Sergey Levine. *Meta-world: A benchmark and evaluation for multi-task and meta reinforcement learning.* CORL, 2020.
 
-- Bourne shell `sh`
-  Dikembangkan oleh Stephen Bourne di Bell Labs, yang kala itu sebagai pengganti Thompson shell(diciptakan Ken Thompson), banyak sistem unix-like tetap memiliki `/bin/sh`—yang mana menjadi symbolic link atau hard link, bahkan ketika shell lain yang digunakan tetap `sh` adalah sebagai dasarnya, sebagai kompatibilitas perintah.
-- Korn shell `ksh` Unix shell yang dikembangkan oleh David Korn di Bell Labs,
-  inisialiasi pengembangan ini berdasar pada source code Bourne shell, namun juga memiliki fitur `csh` dan `sh`, pengembanganya pun pada saat saya menulis ini pun terus <a href="http://github.com/att/ast" target="_blank" rel="noopener">terawat</a>.
-- Bourne again shell `bash`
-  adalah proyek ini open source <a href="http://gnu.org/software/bash/" target="_blank" rel="noopener">GNU project</a> memilki kompatibel dengan `sh` yang menggabungkan fitur penting dari `ksh` dan `csh`, dan menjadi salah satu shell yang paling umum digunakan (umumnya menjadi default shell login Linux dan Apple's macOS Mojave).
-- Z shell `zsh` ini mempunyai wadah komunitasnya disebutnya <a href="http://ohmyz.sh/"  target="_blank" rel="noopener">"Oh My Zsh"</a>, plug-in dan theme `zsh` bisa kita temukan di komunitas ini, saya saat ini menggunakan `zsh`, shell ini juga menjadi default dari sistem operasi macOS Catalina, yang menggantikan bash.
-- friendly interactive shell `fish`
-  yah sesuai dengan <a href="http://fishshell.com/" target="_blank" rel="noopener">deskripsi</a> di web nya, menurut saya shell ini fun banget, fitur yang saya sukai dari shell ini autosuggestions, dan konfigurasi yang mudah melalui web based.
+[10] Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, and Sergey Levine. *Soft actor-critic: Off-policy maximum entropy deep reinforcement learning with a stochastic actor.* ICML, 2018.
 
-Masih banyak yang belum dijelaskan pada tulisan ini jika masih tertarik, baca lebih <a href="http://en.wikipedia.org/wiki/List_of_command-line_interpreters#Operating_system_shells" target="_blank" rel="noopener">banyak</a> dan juga <a href="http://en.wikipedia.org/wiki/Comparison_of_command_shells" target="_blank" rel="noopener">komparasinya</a> masing-masing shell.
+[11] Ofir Nachum, Shixiang Gu, Honglak Lee, and Sergey Levine. *Near-optimal representation learning for hierarchical reinforcement learning.* ICLR, 2018.
 
-Jika kamu tertarik untuk mengubah default shell login pada sistem operasi, kamu bisa menginstall dengan cara mengikuti didokumentasi/cara penginstallan dimasing-masing shell disini saya tidak membahas karena distro yang kita pakai mungkin berbeda-beda.
+[12] Sanjay Krishnan, Roy Fox, Ion Stoica, and Ken Goldberg. *DDCO: Discovery of deep continuous options for robot learning from demonstrations.* CORL, 2017.
 
-Untuk menjadikan default shell login pada OS bisa menggunakan perintah ini.
+[13] Corey Lynch, Mohi Khansari, Ted Xiao, Vikash Kumar, Jonathan Tompson, Sergey Levine, and Pierre Sermanet. *Learning Latent Plans from Play.* CORL, 2019.
 
-```bash
-# command
-$ sudo chsh [options] [LOGIN]
+[14] Tanmay Shankar, and Abhinav Gupta. *Learning Robot Skills with Temporal Variational Inference.* ICML, 2020.
 
-# contoh penggunaan
-$ sudo chsh -s /user/bin/zsh harpi
-# mengubah default shell user harpi menjadi zsh shell.
-$ reboot
+[15] Pierre-Luc Bacon, Jean Harb, and Doina Precup. *The Option-Critic Architecture.* AAAI, 2017.
 
-# atau kamu juga bisa mengubah file /etc/passwd dan edit secara manual user shellnya.
-# jika masih bingung manfaatkan perintah man untuk melihat manual page.
-$ man chsh
-```
+[16] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, and Neil Houlsby. *An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale.* ICLR, 2021.
 
-Terakhir untuk tulisan ini, shell memilki berbagai macam, pilihlah shell yang sesuai dengan keinginanmu untuk menunjang produktivitas dan sesuaikan dengan kebutuhan, terlalu banyak plugin dan kebingungan memilih tema itu buruk 😁.
+[17] Rich Sutton, Doina Precup, and Satinder Singh. *Between MDPs and semi-MDPs: A framework for temporal abstraction in reinforcement learning.* Elsevier, 1998.
 
-Terimakasih sudah baca, _penulis menerima kritik dan saran._
-
-##### Notes
-
-<small id="user-ref"><sup>[[1]](#user)</sup> Manusia yang mengoperasikan dan mengendalikan sistem komputer.</small>
-
-##### Resources
-
-- [Evolution shells in Linux](http://developer.ibm.com/tutorials/l-linux-shells/)
-- [Kernel Defintion](http://www.linfo.org/kernel.html)
-- [The Shell](http://www.cis.rit.edu/class/simg211/unixintro/Shell.html)
+[18] Laurent Dinh, Jascha Sohl-Dickstein, and Samy Bengio. *Density estimation using real NVP*. ICLR, 2017.
